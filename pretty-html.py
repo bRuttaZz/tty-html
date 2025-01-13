@@ -18,36 +18,40 @@ VERSION = "0.0.0"
 
 
 class HTML_DOM_SECTION(Enum):
-    HEAD=0
-    BODY=1
-    FOOTER=2
+    HEAD = 0
+    BODY = 1
+    FOOTER = 2
+
 
 class ANSI_FMT_STR(Enum):
     """ANSI format strings"""
-    START   = "\033["
-    END     = "m"
+
+    START = "\033["
+    END = "m"
 
     DEFAULT = "0"
-    BOLD    = "1"
-    FAINT   = "2"
+    BOLD = "1"
+    FAINT = "2"
     ITALICS = "3"
     UNDERLINE = "4"
-    BLINK   = "5"
+    BLINK = "5"
     BLINK_FAST = "6"
     REVERSE = "7"
-    HIDE    = "8"
-    STRIKE  = "9"
+    HIDE = "8"
+    STRIKE = "9"
+
 
 class ANSI_COLOR_CODE(Enum):
     """std ANSI color codes"""
-    DEFAULT     = ""
+
+    DEFAULT = ""
     BLACK = "30"
-    RED   = "31"
+    RED = "31"
     GREEN = "32"
     YELLOW = "33"
-    BLUE  = "34"
+    BLUE = "34"
     MAGENTA = "35"
-    CYAN  = "36"
+    CYAN = "36"
     WHITE = "37"
 
 
@@ -55,24 +59,18 @@ DEFAULT_ENODING = locale.getencoding()
 TERMINAL_WIDTH = os.get_terminal_size()[0]
 INDENTATION_CHAR = "  "
 
-HTML_IGNORE_CLASS = [
-    "script",
-    "style"
-]
-HTML_PRIORITY_CLASS = [
-    "no-script"
-]
+HTML_IGNORE_CLASS = ["script", "style"]
+HTML_PRIORITY_CLASS = ["no-script"]
 SINGLE_TAG_MAPS = {
     "br": "\n",
     "img": "〿Image〿",
     "hr": f"\n{'―'*(TERMINAL_WIDTH-1)}",
     "input": "〿Input〿",
 }
-INDENTATION_BLOCKS = [
-    "ul", "ol"
-]
-ENTRY_SEPERATED_TAGS = [    # will put a new line before
-    "body", "footer",
+INDENTATION_BLOCKS = ["ul", "ol"]
+ENTRY_SEPERATED_TAGS = [  # will put a new line before
+    "body",
+    "footer",
 ]
 
 TAG_SIMILARITY_MAP = {
@@ -82,91 +80,125 @@ TAG_SIMILARITY_MAP = {
     "strong": "b",
     "sub": "small",
 }
-TAG_COLOR_MAP = {           # optional color code mapping for tags
+TAG_COLOR_MAP = {  # optional color code mapping for tags
     "h1": ANSI_COLOR_CODE.GREEN,
 }
 
 
 def fprint(
-        msg:str,
-        color:ANSI_COLOR_CODE=ANSI_COLOR_CODE.DEFAULT,
-        fmt:List[ANSI_FMT_STR]=[],
-        out:TextIO=stdout,
-    ):
+    msg: str,
+    color: ANSI_COLOR_CODE = ANSI_COLOR_CODE.DEFAULT,
+    fmt: List[ANSI_FMT_STR] = [],
+    out: TextIO = stdout,
+):
     """Print formatted text"""
     out.write(
-        f"{ANSI_FMT_STR.START.value}{color.value}{';' if fmt else ''}{';'.join([f.value for f in fmt])}{ANSI_FMT_STR.END.value}" +
-        f"{msg}" +
-        f"{ANSI_FMT_STR.START.value}{ANSI_FMT_STR.DEFAULT.value};{ANSI_FMT_STR.END.value}"
+        f"{ANSI_FMT_STR.START.value}{color.value}{';' if fmt else ''}{';'.join([f.value for f in fmt])}{ANSI_FMT_STR.END.value}"
+        + f"{msg}"
+        + f"{ANSI_FMT_STR.START.value}{ANSI_FMT_STR.DEFAULT.value};{ANSI_FMT_STR.END.value}"
     )
+
 
 def main() -> int:
     """parse input args"""
     parser = argparse.ArgumentParser(
         prog=PROG_NAME,
         usage=f"{PROG_NAME} [OPTION]... [FILE]...",
-        description="[Pre]tty-HTML: A CLI parser for HTML. Pretty print HTML inputs to stdout. " +
-            "With no FILE, or when FILE is -, read standard input.",
+        description="[Pre]tty-HTML: A CLI parser for HTML. Pretty print HTML inputs to stdout. "
+        + "With no FILE, or when FILE is -, read standard input.",
         add_help=True,
         allow_abbrev=True,
         exit_on_error=True,
     )
-    parser.add_argument('filename', nargs="*", help="FILE names to be formatted" )
-    parser.add_argument('-v', '--version', required=False, action="store_true",
-        help="print version and exit")
+    parser.add_argument("filename", nargs="*", help="FILE names to be formatted")
+    parser.add_argument(
+        "-v",
+        "--version",
+        required=False,
+        action="store_true",
+        help="print version and exit",
+    )
     args = parser.parse_args()
 
     if args.version:
         fprint(f"{parser.prog} v{VERSION}")
         return 0
-    elif args.filename and  "-" not in args.filename:
+    elif args.filename and "-" not in args.filename:
         for file_i, file in enumerate(args.filename):
-            if file_i != 0: fprint("\n\n")
-            f_p:Path = Path(file)
+            if file_i != 0:
+                fprint("\n\n")
+            f_p: Path = Path(file)
             if not f_p.exists():
-                fprint(f"{PROG_NAME}: error: {file}: No such file or directory\n", out=stderr,
-                    color=ANSI_COLOR_CODE.RED)
+                fprint(
+                    f"{PROG_NAME}: error: {file}: No such file or directory\n",
+                    out=stderr,
+                    color=ANSI_COLOR_CODE.RED,
+                )
                 continue
             if not f_p.is_file():
-                fprint(f"{PROG_NAME}: error: {file}: Is a directory\n", out=stderr, color=ANSI_COLOR_CODE.RED)
+                fprint(
+                    f"{PROG_NAME}: error: {file}: Is a directory\n",
+                    out=stderr,
+                    color=ANSI_COLOR_CODE.RED,
+                )
                 continue
             try:
-                reader = open(f_p, 'r', errors="strict", encoding=DEFAULT_ENODING)
+                reader = open(f_p, "r", errors="strict", encoding=DEFAULT_ENODING)
             except ValueError:
-                fprint(f"{PROG_NAME}: error: {file}: Not able to decode file. Not of {DEFAULT_ENODING}\n", out=stderr,
-                    color=ANSI_COLOR_CODE.RED)
+                fprint(
+                    f"{PROG_NAME}: error: {file}: Not able to decode file. Not of {DEFAULT_ENODING}\n",
+                    out=stderr,
+                    color=ANSI_COLOR_CODE.RED,
+                )
                 continue
             try:
                 ts = Transilator(reader)
                 ts.transilate()
             except KeyboardInterrupt:
-                fprint(f"{PROG_NAME}: error: KeyboardInterrupt : exiting..\n", out=stderr, color=ANSI_COLOR_CODE.RED)
+                fprint(
+                    f"{PROG_NAME}: error: KeyboardInterrupt : exiting..\n",
+                    out=stderr,
+                    color=ANSI_COLOR_CODE.RED,
+                )
                 return 130
             except Exception as exp:
-                fprint(f"{PROG_NAME}: error: {file}: Error parsing file: {exp}\n", out=stderr,
-                    color=ANSI_COLOR_CODE.RED)
+                fprint(
+                    f"{PROG_NAME}: error: {file}: Error parsing file: {exp}\n",
+                    out=stderr,
+                    color=ANSI_COLOR_CODE.RED,
+                )
                 continue
     else:
         try:
             ts = Transilator(stdin)
             ts.transilate()
         except KeyboardInterrupt:
-            fprint(f"{PROG_NAME}: error: KeyboardInterrupt : exiting..\n", out=stderr, color=ANSI_COLOR_CODE.RED)
+            fprint(
+                f"{PROG_NAME}: error: KeyboardInterrupt : exiting..\n",
+                out=stderr,
+                color=ANSI_COLOR_CODE.RED,
+            )
             return 130
         except Exception as exp:
-            fprint(f"{PROG_NAME}: error: Error parsing html: {exp}\n", out=stderr, color=ANSI_COLOR_CODE.RED)
+            fprint(
+                f"{PROG_NAME}: error: Error parsing html: {exp}\n",
+                out=stderr,
+                color=ANSI_COLOR_CODE.RED,
+            )
             return 2
-    return 0;
+    return 0
+
 
 class Transilator(HTMLParser):
     """Read and transilate html strings"""
+
     indentation = 0
 
-    def __init__(self, reader:TextIO):
+    def __init__(self, reader: TextIO):
         super().__init__(convert_charrefs=True)
-        self.reader:TextIO = reader
-        self.tag_stack:list[str] = []
-        self.tag_stack_attrs:list[list[tuple[str, str | None]]] = []
+        self.reader: TextIO = reader
+        self.tag_stack: list[str] = []
+        self.tag_stack_attrs: list[list[tuple[str, str | None]]] = []
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         if tag in SINGLE_TAG_MAPS:
@@ -181,16 +213,17 @@ class Transilator(HTMLParser):
     def handle_endtag(self, tag: str) -> None:
         if tag in INDENTATION_BLOCKS:
             self.indentation -= 1
-            if not self.indentation: fprint("\n")
+            if not self.indentation:
+                fprint("\n")
         while True:
-            last_tag:str = self.tag_stack.pop()
+            last_tag: str = self.tag_stack.pop()
             self.tag_stack_attrs.pop()
-            if last_tag==tag:
+            if last_tag == tag:
                 break
 
     def handle_data(self, data: str) -> None:
-        tag = self.tag_stack[-1] if self.tag_stack else ''
-        self.process_data(data, tag);
+        tag = self.tag_stack[-1] if self.tag_stack else ""
+        self.process_data(data, tag)
 
     def _find_section(self) -> HTML_DOM_SECTION:
         section = HTML_DOM_SECTION.BODY
@@ -200,13 +233,13 @@ class Transilator(HTMLParser):
             section = HTML_DOM_SECTION.FOOTER
         return section
 
-    def _write_content(self, data:str, tag:str) -> None:
+    def _write_content(self, data: str, tag: str) -> None:
         """Write formatted html data based on tag"""
         if tag in HTML_PRIORITY_CLASS:
             fprint(
                 "\n\n" + data + "\n\n",
                 color=ANSI_COLOR_CODE.RED,
-                fmt=[ANSI_FMT_STR.BOLD]
+                fmt=[ANSI_FMT_STR.BOLD],
             )
             return
 
@@ -222,7 +255,7 @@ class Transilator(HTMLParser):
                 continue
             _processed_cases.append(tag)
 
-            match tag :
+            match tag:
                 case "h1":
                     fmt.append(ANSI_FMT_STR.BOLD)
                     fmt.append(ANSI_FMT_STR.UNDERLINE)
@@ -247,13 +280,13 @@ class Transilator(HTMLParser):
                             break
                     data = "\033]8;;" + _href + "\033\\" + data + "\033]8;;\033\\"
                 case "li":
-                    if len(self.tag_stack)>1 and self.tag_stack[-2] == "ol":
+                    if len(self.tag_stack) > 1 and self.tag_stack[-2] == "ol":
                         text_prelim = "+ "
                     else:
                         text_prelim = "* "
                     pre_print = "\n"
-                    break                   # exit from loop to maintain indentation logics
-                case _ :
+                    break  # exit from loop to maintain indentation logics
+                case _:
                     ...
 
         fprint(
@@ -262,23 +295,26 @@ class Transilator(HTMLParser):
             fmt=fmt,
         )
 
-    def process_data(self, data:str, tag:str):
+    def process_data(self, data: str, tag: str):
         """process data emitted from parser"""
-        if not data: return
-        if tag in HTML_IGNORE_CLASS: return
+        if not data:
+            return
+        if tag in HTML_IGNORE_CLASS:
+            return
 
         # formatting
-        data = re.sub(r'\s+', ' ', data).strip()
-        if data.strip(): data += " "
+        data = re.sub(r"\s+", " ", data).strip()
+        if data.strip():
+            data += " "
 
         match self._find_section():
             case HTML_DOM_SECTION.HEAD:
                 match tag:
                     case "title":
                         fprint(
-                            "\rTitle : " + data.title() + SINGLE_TAG_MAPS['hr'],
+                            "\rTitle : " + data.title() + SINGLE_TAG_MAPS["hr"],
                             color=ANSI_COLOR_CODE.YELLOW,
-                            fmt=[ANSI_FMT_STR.FAINT]
+                            fmt=[ANSI_FMT_STR.FAINT],
                         )
                     case _:
                         ...
