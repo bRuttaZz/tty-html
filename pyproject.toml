@@ -1,0 +1,58 @@
+[project]
+name = "tty-html"
+description = "[Pre]tty-HTML: A CLI parser for HTML. Pretty print HTML inputs to Unix stdout."
+requires-python = ">=3.10"
+readme = "README.md"
+dynamic = ["version"]
+license = { file = "LICENSE" }
+authors = [{ name = "@bRuttaZz", email = "agrajpdas@gmail.com" }]
+keywords = [
+    "pretty-html",
+    "html",
+    "pre-tty",
+    "CLI",
+    "Unix",
+    "prettify",
+    "commandline",
+]
+classifiers = [
+    'Development Status :: 5 - Production/Stable',
+    'Intended Audience :: Developers',
+    'Intended Audience :: Science/Research',
+    'License :: OSI Approved :: MIT License',
+    'Operating System :: POSIX',
+    'Operating System :: POSIX :: Linux',
+    'Operating System :: Unix',
+    'Programming Language :: Python :: 3.10',
+    'Programming Language :: Python :: 3.11',
+    'Programming Language :: Python :: 3.12',
+    'Programming Language :: Python :: 3.13',
+    'Topic :: Terminals',
+    'Topic :: Text Processing',
+    'Topic :: Text Processing :: Markup',
+    'Topic :: Text Processing :: Markup :: HTML',
+    'Topic :: Software Development',
+    'Topic :: Utilities',
+    'Typing :: Typed',
+    'Natural Language :: English',
+]
+
+[tool.setuptools.dynamic]
+version = { attr = "tty_html.__version__" }
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["tty_html"]
+
+[project.scripts]
+tty-html = "tty_html:main"
+
+
+[project.urls]
+Homepage = "https://github.com/bRuttaZz/tty-html"
+Issues = "https://github.com/bRuttaZz/tty-html/issues"
+Repository = "https://github.com/bRuttaZz/tty-html.git"
+Documentation = "https://pypi.org/project/tty-html/"

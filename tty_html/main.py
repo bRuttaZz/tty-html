@@ -1,5 +1,7 @@
 #!/usr/bin/python3
 
+# cython: language_level=3str
+
 import os
 import re
 import sys
@@ -13,8 +15,8 @@ from enum import Enum
 from typing import TextIO, List
 from html.parser import HTMLParser
 
+__version__ = "0.0.0"
 PROG_NAME = "tty-html"
-VERSION = "0.0.0"
 
 
 class HTML_DOM_SECTION(Enum):
@@ -54,9 +56,8 @@ class ANSI_COLOR_CODE(Enum):
     CYAN = "36"
     WHITE = "37"
 
-
 DEFAULT_ENODING = locale.getencoding()
-TERMINAL_WIDTH = os.get_terminal_size()[0]
+TERMINAL_WIDTH = os.get_terminal_size()[0] if stdout.isatty() else 0
 INDENTATION_CHAR = "  "
 
 HTML_IGNORE_CLASS = ["script", "style"]
@@ -121,7 +122,7 @@ def main() -> int:
     args = parser.parse_args()
 
     if args.version:
-        fprint(f"{parser.prog} v{VERSION}")
+        fprint(f"{parser.prog} v{__version__}")
         return 0
     elif args.filename and "-" not in args.filename:
         for file_i, file in enumerate(args.filename):
@@ -255,39 +256,38 @@ class Transilator(HTMLParser):
                 continue
             _processed_cases.append(tag)
 
-            match tag:
-                case "h1":
-                    fmt.append(ANSI_FMT_STR.BOLD)
-                    fmt.append(ANSI_FMT_STR.UNDERLINE)
-                    data = "\n" + data + "\n"
-                case "b":
-                    fmt.append(ANSI_FMT_STR.BOLD)
-                case "i":
-                    fmt.append(ANSI_FMT_STR.ITALICS)
-                case "em":
-                    fmt.append(ANSI_FMT_STR.BLINK)
-                case "small":
-                    fmt.append(ANSI_FMT_STR.FAINT)
-                case "del":
-                    fmt.append(ANSI_FMT_STR.STRIKE)
-                case "mark":
-                    fmt.append(ANSI_FMT_STR.UNDERLINE)
-                case "a":
-                    _href = ""
-                    for name, value in self.tag_stack_attrs[tag_i]:
-                        if name == "href":
-                            _href = value or ""
-                            break
-                    data = "\033]8;;" + _href + "\033\\" + data + "\033]8;;\033\\"
-                case "li":
-                    if len(self.tag_stack) > 1 and self.tag_stack[-2] == "ol":
-                        text_prelim = "+ "
-                    else:
-                        text_prelim = "* "
-                    pre_print = "\n"
-                    break  # exit from loop to maintain indentation logics
-                case _:
-                    ...
+            if tag == "h1":
+                fmt.append(ANSI_FMT_STR.BOLD)
+                fmt.append(ANSI_FMT_STR.UNDERLINE)
+                data = "\n" + data + "\n"
+            elif tag == "b":
+                fmt.append(ANSI_FMT_STR.BOLD)
+            elif tag == "i":
+                fmt.append(ANSI_FMT_STR.ITALICS)
+            elif tag == "em":
+                fmt.append(ANSI_FMT_STR.BLINK)
+            elif tag == "small":
+                fmt.append(ANSI_FMT_STR.FAINT)
+            elif tag == "del":
+                fmt.append(ANSI_FMT_STR.STRIKE)
+            elif tag == "mark":
+                fmt.append(ANSI_FMT_STR.UNDERLINE)
+            elif tag == "a":
+                _href = ""
+                for name, value in self.tag_stack_attrs[tag_i]:
+                    if name == "href":
+                        _href = value or ""
+                        break
+                data = "\033]8;;" + _href + "\033\\" + data + "\033]8;;\033\\"
+            elif tag == "li":
+                if len(self.tag_stack) > 1 and self.tag_stack[-2] == "ol":
+                    text_prelim = "+ "
+                else:
+                    text_prelim = "* "
+                pre_print = "\n"
+                break  # exit from loop to maintain indentation logics
+            else:
+                ...
 
         fprint(
             pre_print + INDENTATION_CHAR * self.indentation + text_prelim + data,
@@ -307,20 +307,17 @@ class Transilator(HTMLParser):
         if data.strip():
             data += " "
 
-        match self._find_section():
-            case HTML_DOM_SECTION.HEAD:
-                match tag:
-                    case "title":
-                        fprint(
-                            "\rTitle : " + data.title() + SINGLE_TAG_MAPS["hr"],
-                            color=ANSI_COLOR_CODE.YELLOW,
-                            fmt=[ANSI_FMT_STR.FAINT],
-                        )
-                    case _:
-                        ...
-                return
-            case _:
-                return self._write_content(data, tag)
+        section = self._find_section()
+        if section == HTML_DOM_SECTION.HEAD:
+            if tag == "title":
+                fprint(
+                    "\rTitle : " + data.title() + SINGLE_TAG_MAPS["hr"],
+                    color=ANSI_COLOR_CODE.YELLOW,
+                    fmt=[ANSI_FMT_STR.FAINT],
+                )
+            return
+        else:
+            return self._write_content(data, tag)
 
     def transilate(self):
         """Do the work :)"""
