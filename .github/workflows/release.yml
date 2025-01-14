@@ -1,0 +1,47 @@
+name: "release"
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: "Build"
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: get arch
+        id: uname
+        run: echo "::set-output name=arch::$(uname -m)"
+
+      - name: get platform
+        id: os-name
+        run: echo "::set-output name=os::$(uname)"
+
+      - run: "make && make compile"
+        working-directory: "."
+
+      - name: release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ github.ref_name }}
+        run: |
+          gh release create "$tag" \
+              --repo="$GITHUB_REPOSITORY" \
+              --title="$tag" \
+              --generate-notes
+
+      - name: upload assets
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ github.ref_name }}
+        run: |
+          gh release upload "$tag" \
+            ./tty-html_${{ github.ref_name }}_${{ steps.uname.outputs.os }}_${{ steps.uname.outputs.arch }}
+        working-directory: "."

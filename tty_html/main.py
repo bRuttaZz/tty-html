@@ -73,6 +73,9 @@ ENTRY_SEPERATED_TAGS = [  # will put a new line before
     "body",
     "footer",
 ]
+EXIT_SEPERATED_TAGS = [   # will put a new line after
+    "body"
+]
 
 TAG_SIMILARITY_MAP = {
     "h2": "h1",
@@ -119,8 +122,12 @@ def main() -> int:
         action="store_true",
         help="print version and exit",
     )
+    parser.add_argument('-V', action="store_true", help="same as '--version' | '-v', but only print version")
     args = parser.parse_args()
 
+    if args.V:
+        stdout.write(__version__)
+        return 0
     if args.version:
         fprint(f"{parser.prog} v{__version__}")
         return 0
@@ -216,6 +223,8 @@ class Transilator(HTMLParser):
             self.indentation -= 1
             if not self.indentation:
                 fprint("\n")
+        elif tag in EXIT_SEPERATED_TAGS:
+            fprint("\n")
         while True:
             last_tag: str = self.tag_stack.pop()
             self.tag_stack_attrs.pop()

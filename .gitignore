@@ -3,6 +3,7 @@ build
 dist
 *.egg-info
 pip-build
+cosmocc
 
 tty_html.c
-/tty-html.run
+/tty-html_v*
