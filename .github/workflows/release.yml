@@ -16,13 +16,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: get arch
-        id: uname
-        run: echo "::set-output name=arch::$(uname -m)"
-
-      - name: get platform
-        id: os-name
-        run: echo "::set-output name=os::$(uname)"
+      - id: execname
+        run: echo "::set-output name=exe::$(make exec-file)"
 
       - run: pip3 install cython
 
@@ -45,5 +40,5 @@ jobs:
           tag: ${{ github.ref_name }}
         run: |
           gh release upload "$tag" \
-            ./tty-html_${{ github.ref_name }}_${{ steps.uname.outputs.os }}_${{ steps.uname.outputs.arch }}
+            ./${{ steps.execname.outputs.exe }}
         working-directory: "."

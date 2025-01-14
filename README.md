@@ -1,4 +1,4 @@
-<img src="./misc/logo.png" align="right" width=150>
+<img src="https://raw.githubusercontent.com/bRuttaZz/tty-html/refs/heads/main/misc/logo.png" align="right" width=150>
 
 # \[Pre\]tty-HTML
 
@@ -18,7 +18,7 @@ The program is intended to be just a simple Unix CLI utility. One can specify an
 $ tty-html --help
 ...
 
-# format from an html file 
+# format from an html file
 $ tty-html index.html
 ...
 
@@ -37,7 +37,7 @@ Easy! There're three ways
 ### 1. Compiled binary
 head over to the [release page](https://github.com/bruttazz/tty-html/releases/latest) and download the binary. make it executable. Thats it. (optionally add it to a bin path of your choice)
 
-### 2. Using PIP 
+### 2. Using PIP
 If you got pip, feel free to install  using
 ```sh
 pip install tty-html
@@ -47,7 +47,7 @@ pip install tty-html
 If you are nerdy enough, there is a Makefile :), get a c compiler, install `python3` and `cython`, and go for the following commands in order
 ```sh
 # transpile script to c
-make 
+make
 
 # compile the c
 make compile
@@ -57,8 +57,8 @@ for detailed use case : `make help` :)
 
 ## Usage Gallery
 
-1. the raw html 
-![raw image](./misc/demo.in.png)
+1. the raw html
+![raw image](https://raw.githubusercontent.com/bRuttaZz/tty-html/refs/heads/main/misc/demo.in.png)
 
 2. the formatted one
-![formatted](./misc/demo.out.png)
+![formatted](https://raw.githubusercontent.com/bRuttaZz/tty-html/refs/heads/main/misc/demo.out.png)

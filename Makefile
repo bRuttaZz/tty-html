@@ -21,6 +21,9 @@ compile: ## Compile c script to binary
 help:	## Show all Makefile targets.
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[33m%-30s\033[0m %s\n", $$1, $$2}'
 
+exec-file:
+	@echo -n $(EXE_OUT)
+
 pip-install: ## Install using pip
 	@$(PYTHON) -m pip install .
 
