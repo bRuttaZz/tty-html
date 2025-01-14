@@ -15,7 +15,7 @@ from enum import Enum
 from typing import TextIO, List
 from html.parser import HTMLParser
 
-__version__ = "0.0.0"
+__version__ = "1.0.0"
 PROG_NAME = "tty-html"
 
 
