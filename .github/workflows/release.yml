@@ -24,6 +24,8 @@ jobs:
         id: os-name
         run: echo "::set-output name=os::$(uname)"
 
+      - run: pip3 install cython
+
       - run: "make && make compile"
         working-directory: "."
 
